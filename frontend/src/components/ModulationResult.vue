@@ -5,7 +5,7 @@
       <el-col :span="8">
         <div class="result-card">
           <div class="label">检测类型</div>
-          <div class="value highlight">{{ store.result?.modulation.type || '-' }}</div>
+          <div class="value highlight">{{ textOr(store.result?.modulation.type) }}</div>
         </div>
       </el-col>
       <el-col :span="8">
@@ -17,7 +17,7 @@
       <el-col :span="8">
         <div class="result-card">
           <div class="label">符号速率</div>
-          <div class="value">{{ store.result?.modulation.symbolRate?.toFixed(0) || 'N/A' }} Baud</div>
+          <div class="value">{{ formatFixed(store.result?.modulation.symbolRate, 0) }} Baud</div>
         </div>
       </el-col>
     </el-row>
@@ -25,7 +25,7 @@
       <div class="label" style="margin-top:12px">候选调制方式</div>
       <div v-for="c in store.result.modulation.candidates" :key="c.type" class="candidate-row">
         <span class="c-type">{{ c.type }}</span>
-        <el-progress :percentage="Math.round(c.score * 100)" :stroke-width="8" :color="progressColor(c.score)" />
+        <el-progress :percentage="toPercent(c.score)" :stroke-width="8" :color="progressColor(c.score)" />
       </div>
     </div>
   </div>
@@ -34,8 +34,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSignalStore } from '../store/signal'
+import { toPercent, formatFixed, textOr } from '../utils/format'
 const store = useSignalStore()
-const pct = computed(() => Math.round((store.result?.modulation.confidence || 0) * 100))
+const pct = computed(() => toPercent(store.result?.modulation.confidence))
 function progressColor(score: number) {
   if (score > 0.7) return '#66bb6a'; if (score > 0.4) return '#ffa726'; return '#ef5350'
 }

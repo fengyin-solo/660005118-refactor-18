@@ -60,13 +60,17 @@ def generate_signal(mod: str, samples: int, snr: float) -> np.ndarray:
     return i, q
 
 
+def magnitude_db(magnitude: np.ndarray) -> np.ndarray:
+    """Convert linear magnitude to dB scale (epsilon guards against log(0))"""
+    return 20 * np.log10(magnitude + 1e-10)
+
+
 def compute_fft(i: np.ndarray, q: np.ndarray, fs: float = 1000.0):
     """Compute FFT magnitude spectrum in dB"""
     iq = i + 1j * q
     n = len(iq)
     fft = np.fft.fftshift(np.fft.fft(iq))
-    mag = np.abs(fft) / n
-    mag_db = 20 * np.log10(mag + 1e-10)
+    mag_db = magnitude_db(np.abs(fft) / n)
     freqs = np.fft.fftshift(np.fft.fftfreq(n, 1/fs))
     return freqs.tolist(), mag_db.tolist()
 
@@ -82,7 +86,7 @@ def compute_waterfall(i: np.ndarray, q: np.ndarray, fs: float = 1000.0, rows: in
         if len(seg_i) < 32:
             break
         fft = np.fft.fftshift(np.fft.fft(seg_i + 1j * seg_q))
-        mag_db = 20 * np.log10(np.abs(fft) / len(seg_i) + 1e-10)
+        mag_db = magnitude_db(np.abs(fft) / len(seg_i))
         half = len(mag_db) // 2
         waterfall.append({
             "time": r * seg / fs,
